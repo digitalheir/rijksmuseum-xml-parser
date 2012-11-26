@@ -27,8 +27,8 @@ public class XmlParser {
 
 	public static void main(String[] args) {
 
-		 int lastFile = 112410;
-//		int lastFile = 10;
+		int lastFile = 112;// 410;
+		// int lastFile = 10;
 		// Pattern p = Pattern.compile("");
 		List<PaintingRecord> records = new ArrayList<PaintingRecord>(lastFile);
 
@@ -40,7 +40,6 @@ public class XmlParser {
 			dom = parseXmlFile("C:/Users/MartyP/Desktop/harvest/" + i + ".xml");
 			records.addAll(parseDocument(dom));
 		}
-		System.out.println(records);
 
 		File outFile = new File("C:/Users/MartyP/Desktop/out.csv");
 		try {
@@ -58,11 +57,8 @@ public class XmlParser {
 		sb.append("identifier" + DIV);
 		sb.append("datestamp" + DIV);
 		for (MetaDatas metadata : MetaDatas.values()) {
-			for (int i = 0; i < metadata.getMaxOcc(); i++) {
-				sb.append(metadata.toString() + DIV);
-			}
+			sb.append(metadata.toString().trim() + DIV);
 		}
-		
 
 		lines.add(sb.toString());
 
@@ -75,25 +71,34 @@ public class XmlParser {
 
 			for (MetaDatas metadata : MetaDatas.values()) {
 				String[] recordMetas = record.getMetadatas(metadata);
+				StringBuilder metas = new StringBuilder("[");
+				for (int i = 0; i < recordMetas.length; i++) {
+					String trimmed = recordMetas[i].trim();
 
-				for (int i = 0; i < metadata.getMaxOcc(); i++) {
-					if (i < recordMetas.length) {
-						sb.append(recordMetas[i] + DIV);
-					} else {
-						sb.append(DIV);
+					if (!"".equals(trimmed)) {
+
+						metas.append("\"" + trimmed + "\",");
 					}
 				}
+				// Replace trailing comma with ]
+				if (metas.length() > 1) {
+					metas.deleteCharAt(metas.length()-1);
+				}
+				metas.append("]");
+
+//				System.out.println(metas.toString());
+				sb.append(metas.toString() + DIV);
 			}
 
 			System.out.println("_________________");
-			lines.add(sb.toString().replaceAll("\t","").replaceAll(
-					"\n", " "));
+			lines.add(sb.toString().replaceAll("\t", "").replaceAll("\n", " "));
 		}
 
 		FileWriter fw = new FileWriter(outFile);
 		BufferedWriter bw = new BufferedWriter(fw);
 		try {
-			System.out.println("Writing CSV file to "+outFile+"...");
+			System.out.println("Writing CSV file to "
+					+ outFile.getAbsolutePath() + "...");
 			for (String line : lines) {
 				bw.write(line);
 				bw.newLine();
